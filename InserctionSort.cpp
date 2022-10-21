@@ -3,14 +3,14 @@ using namespace std;
 
 int global_count = 0;
 
-void ordena(int vet[], int tam)
+void inserctionSort(int vet[], int size)
 {
-    if (tam <= 1)
+    if (size <= 1)
         return;
 
-    ordena(vet, tam - 1);
+    inserctionSort(vet, size - 1);
 
-    for (size_t i = (tam - 1); i > 0; i--)
+    for (size_t i = (size - 1); i > 0; i--)
     {
         if (vet[i - 1] > vet[i])
         {
@@ -23,14 +23,14 @@ void ordena(int vet[], int tam)
 int main()
 {
     int vet[] = {4, 7, 1, 9, 3, 0};
-    int tam = sizeof(vet) / sizeof(int);
+    int size = sizeof(vet) / sizeof(int);
 
-    ordena(vet, tam);
+    inserctionSort(vet, size);
 
-    for (int i = 0; i < tam; i++)
+    for (int i = 0; i < size; i++)
     {
         cout << "[" << vet[i] << "]";
     }
-    cout << "\nSua complexidade: " << global_count << endl;
+    cout << "\nComplexity InserctionSort: " << global_count << endl;
     return 0;
 }
