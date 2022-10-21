@@ -48,18 +48,28 @@ void mergeSort(int vet[], int temp[], int i, int f)
     }
 }
 
+void printVet(int vet[], int size){
+    
+    for (int i = 0; i < size; i++)
+    {
+        cout << "[" << vet[i] << "]";
+    }
+    cout << endl;
+}
+
 int main()
 {
     int vet[] = {4, 7, 1, 9, 3, 0};
     int size = sizeof(vet) / sizeof(int);
     int temp[size];
 
+    cout << "Before Merge" << endl;
+    printVet(vet, size);
+
     mergeSort(vet, temp, 0, size - 1);
 
-    for (int i = 0; i < size; i++)
-    {
-        cout << "[" << vet[i] << "]";
-    }
+    cout << "\nAfter Merge" << endl;
+    printVet(vet, size);
 
     cout << "\nComplexity MergeSort: " << global_count << endl;
     return 0;

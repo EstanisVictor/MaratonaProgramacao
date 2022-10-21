@@ -20,17 +20,29 @@ void inserctionSort(int vet[], int size)
     }
 }
 
-int main()
+void printVet(int vet[], int size)
 {
-    int vet[] = {4, 7, 1, 9, 3, 0};
-    int size = sizeof(vet) / sizeof(int);
-
-    inserctionSort(vet, size);
 
     for (int i = 0; i < size; i++)
     {
         cout << "[" << vet[i] << "]";
     }
+    cout << endl;
+}
+
+int main()
+{
+    int vet[] = {4, 7, 1, 9, 3, 0};
+    int size = sizeof(vet) / sizeof(int);
+
+    cout << "Before InserctionSort" << endl;
+    printVet(vet, size);
+
+    inserctionSort(vet, size);
+
+    cout << "\nAfter InserctionSort" << endl;
+    printVet(vet, size);
+
     cout << "\nComplexity InserctionSort: " << global_count << endl;
     return 0;
 }
