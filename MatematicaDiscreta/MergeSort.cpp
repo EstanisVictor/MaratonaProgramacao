@@ -48,8 +48,9 @@ void mergeSort(int vet[], int temp[], int i, int f)
     }
 }
 
-void printVet(int vet[], int size){
-    
+void printVet(int vet[], int size)
+{
+
     for (int i = 0; i < size; i++)
     {
         cout << "[" << vet[i] << "]";
