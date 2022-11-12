@@ -100,7 +100,7 @@ int main()
 {
 
     // int arr[] = {3, 1, 4, 5, 10, 8, 11, 0, 16, 2, 7, 9, 6, 15, 14, 12};
-    int arr[100000];
+    int arr[10];
     int size = sizeof(arr) / sizeof(int);
 
     long long countInserction = 0;
