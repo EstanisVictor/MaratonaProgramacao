@@ -2,7 +2,7 @@
 #include <unistd.h>
 using namespace std;
 
-queue<string> queue_process;
+vector<int> tempos_Processos;
 
 class Process
 {
@@ -22,7 +22,7 @@ public:
 
 void printCounter(int counter)
 {
-    for (size_t i = 0; i < counter; i++)
+    for (int i = 0; i < counter; i++)
     {
         cout << "\r" << i + 1 << "s";
         sleep(1);
@@ -30,62 +30,94 @@ void printCounter(int counter)
     cout << endl;
 }
 
-void FCFS(vector<Process *> processes)
+vector<Process *> ordenaVetor(vector<Process *> processos)
+{
+    vector<Process *> fila_processos;
+
+    for (size_t i = 0; i < processos.size(); i++)
+    {
+        for (size_t j = 0; j < processos.size(); j++)
+        {
+            if (processos[j]->timeProcess == tempos_Processos[i])
+            {
+                fila_processos.push_back(processos[j]);
+            }
+        }
+    }
+    return fila_processos;
+}
+
+void SJF(vector<Process *> processos)
+{
+
+    sort(tempos_Processos.begin(), tempos_Processos.end());
+    processos = ordenaVetor(processos);
+    cout << "                         SJF" << endl;
+    for (const auto &p : processos)
+    {
+        cout << "-----------------------------------------------------" << endl;
+        cout << p->nameProcess << endl;
+        printCounter(p->timeProcess);
+    }
+}
+
+void FCFS(vector<Process *> processos)
 {
     int momentInterrupt = 0;
-
-    for (size_t i = 0; i < processes.size(); i++)
+    cout << "                         FCFS" << endl;
+    for (size_t i = 0; i < processos.size(); i++)
     {
 
-        if (processes[i]->interrupt)
+        if (processos[i]->interrupt)
         {
             // Houve a interrupção
-            momentInterrupt = (processes[i]->timeProcess) / 2;
-            processes[i]->interrupt = false;
-            processes[i]->timeProcess = (processes[i]->timeProcess) / 2;
-            processes.push_back(processes[i]);
+            momentInterrupt = (processos[i]->timeProcess) / 2;
+            processos[i]->interrupt = false;
+            processos[i]->timeProcess = (processos[i]->timeProcess) / 2;
+            processos.push_back(processos[i]);
         }
         else
         {
             // Não houve interrupção, vai executar o tempo total do processo
-            momentInterrupt = processes[i]->timeProcess;
+            momentInterrupt = processos[i]->timeProcess;
         }
 
         cout << "-----------------------------------------------------" << endl;
-        cout << processes[i]->nameProcess << endl;
+        cout << processos[i]->nameProcess << endl;
         printCounter(momentInterrupt);
     }
 }
 
 int main()
 {
-    vector<Process *> processes;
+    vector<Process *> processos;
 
     for (size_t i = 0; i < 3; i++)
     {
-        int duration = 0;
+        int duracao = 0;
 
         cout << "Tempo do processo " << i + 1 << "?" << endl;
-        int addTime;
-        cin >> addTime;
+        int tempo;
+        cin >> tempo;
+        tempos_Processos.push_back(tempo);
 
         cout << "P" << i + 1 << " tem interrupcao?" << endl;
         cout << "0 - NAO\n1 - SIM" << endl;
-        bool interuptQuestion;
-        cin >> interuptQuestion;
+        bool interrupcao;
+        cin >> interrupcao;
 
-        if (interuptQuestion)
+        if (interrupcao)
         {
             srand(time(NULL));
-            duration = rand() % 10;
+            duracao = rand() % 10;
         }
 
-        Process *p = new Process(addTime, interuptQuestion, duration, "P" + to_string(i + 1));
+        Process *p = new Process(tempo, interrupcao, duracao, "P" + to_string(i + 1));
 
-        processes.push_back(p);
+        processos.push_back(p);
     }
 
-    FCFS(processes);
-
+    //  FCFS(processos);
+    SJF(processos);
     return 0;
 }
