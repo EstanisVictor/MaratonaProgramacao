@@ -30,37 +30,6 @@ void printCounter(int counter)
     cout << endl;
 }
 
-vector<Process *> ordenaVetor(vector<Process *> processos)
-{
-    vector<Process *> fila_processos;
-
-    for (size_t i = 0; i < processos.size(); i++)
-    {
-        for (size_t j = 0; j < processos.size(); j++)
-        {
-            if (processos[j]->timeProcess == tempos_Processos[i])
-            {
-                fila_processos.push_back(processos[j]);
-            }
-        }
-    }
-    return fila_processos;
-}
-
-void SJF(vector<Process *> processos)
-{
-
-    sort(tempos_Processos.begin(), tempos_Processos.end());
-    processos = ordenaVetor(processos);
-    cout << "                         SJF" << endl;
-    for (const auto &p : processos)
-    {
-        cout << "-----------------------------------------------------" << endl;
-        cout << p->nameProcess << endl;
-        printCounter(p->timeProcess);
-    }
-}
-
 void FCFS(vector<Process *> processos)
 {
     int momentInterrupt = 0;
@@ -88,6 +57,73 @@ void FCFS(vector<Process *> processos)
     }
 }
 
+vector<Process *> ordenaVetorMenorTempo(vector<Process *> processos)
+{
+    vector<Process *> fila_processos;
+
+    for (size_t i = 0; i < processos.size(); i++)
+    {
+        for (size_t j = 0; j < processos.size(); j++)
+        {
+            if (processos[j]->timeProcess == tempos_Processos[i])
+            {
+                fila_processos.push_back(processos[j]);
+            }
+        }
+    }
+    return fila_processos;
+}
+
+void SJF(vector<Process *> processos)
+{
+
+    sort(tempos_Processos.begin(), tempos_Processos.end());
+    processos = ordenaVetorMenorTempo(processos);
+    cout << "                         SJF" << endl;
+    for (const auto &p : processos)
+    {
+
+        cout << "-----------------------------------------------------" << endl;
+        cout << p->nameProcess << endl;
+        printCounter(p->timeProcess);
+    }
+}
+
+void SRT(vector<Process *> processos)
+{
+    sort(tempos_Processos.begin(), tempos_Processos.end());
+    processos = ordenaVetorMenorTempo(processos);
+    int momentoInterrupcao = 0;
+    queue<int> fila_voltas;
+    for (const auto &p : processos)
+    {
+
+        if (p->interrupt)
+        {
+            momentoInterrupcao = (p->timeProcess) / 2;
+            // Momento em que o processo de maior prioridade voltará
+            fila_voltas.push(momentoInterrupcao + p->duration_interrupt);
+        }
+
+        cout << "-----------------------------------------------------" << endl;
+        cout << p->nameProcess << endl;
+
+        if (fila_voltas.empty())
+        {
+            // tempo normal do processo
+            printCounter(p->timeProcess);
+        }
+        else
+        {
+            // tempo até onde o processo irá executar
+            printCounter(fila_voltas.front());
+            fila_voltas.pop();
+            
+        }
+
+        
+    }
+}
 int main()
 {
     vector<Process *> processos;
@@ -119,5 +155,6 @@ int main()
 
     //  FCFS(processos);
     SJF(processos);
+    SRT(processos);
     return 0;
 }
