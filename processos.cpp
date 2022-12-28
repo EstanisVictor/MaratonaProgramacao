@@ -3,6 +3,7 @@
 using namespace std;
 
 vector<int> tempos_Processos;
+int contTempo = 0;
 
 class Process
 {
@@ -11,6 +12,7 @@ public:
     int timeProcess;
     bool interrupt;
     int duration_interrupt;
+    int momentoVolta;
     Process(int _time, bool _interrupt, int _duration, string _nameProcess)
     {
         nameProcess = _nameProcess;
@@ -18,12 +20,22 @@ public:
         interrupt = _interrupt;
         duration_interrupt = _duration;
     }
+    // Construtor para SRT
+    Process(int _time, bool _interrupt, int _duration, string _nameProcess, int _momentoVolta)
+    {
+        nameProcess = _nameProcess;
+        timeProcess = _time;
+        interrupt = _interrupt;
+        duration_interrupt = _duration;
+        momentoVolta = _momentoVolta;
+    }
 };
 
 void printCounter(int counter)
 {
     for (int i = 0; i < counter; i++)
     {
+        contTempo++;
         cout << "\r" << i + 1 << "s";
         sleep(1);
     }
@@ -93,37 +105,71 @@ void SRT(vector<Process *> processos)
 {
     sort(tempos_Processos.begin(), tempos_Processos.end());
     processos = ordenaVetorMenorTempo(processos);
-    int momentoInterrupcao = 0;
-    queue<int> fila_voltas;
     for (const auto &p : processos)
     {
+        cout << "Durcao " << p->nameProcess << ": " << p->duration_interrupt << endl;
+    }
+    int momentoInterrupcao = 0;
+    queue<Process *> fila_prioridades;
 
+    for (const auto &p : processos)
+    {
         if (p->interrupt)
         {
             momentoInterrupcao = (p->timeProcess) / 2;
-            // Momento em que o processo de maior prioridade voltará
-            fila_voltas.push(momentoInterrupcao + p->duration_interrupt);
-        }
-
-        cout << "-----------------------------------------------------" << endl;
-        cout << p->nameProcess << endl;
-
-        if (fila_voltas.empty())
-        {
-            // tempo normal do processo
-            printCounter(p->timeProcess);
+            p->interrupt = false;
+            p->momentoVolta = momentoInterrupcao + p->duration_interrupt;
+            p->timeProcess = momentoInterrupcao;
+            fila_prioridades.push(p);
         }
         else
         {
-            // tempo até onde o processo irá executar
-            printCounter(fila_voltas.front());
-            fila_voltas.pop();
-            
+            momentoInterrupcao = p->timeProcess;
         }
 
-        
+        if (!fila_prioridades.empty())
+        {
+            if ((contTempo + p->timeProcess) > fila_prioridades.front()->momentoVolta)
+            {
+                if (!(contTempo == fila_prioridades.front()->momentoVolta))
+                {
+                    // Exec até o momento de volta do proximo processo
+                    cout << "r----------------------------------------------------" << endl;
+                    cout << p->nameProcess << endl;
+                    printCounter(p->duration_interrupt);
+                }
+
+                if ((contTempo + p->timeProcess) - fila_prioridades.front()->momentoVolta > 0)
+                {
+                    p->timeProcess = (contTempo + p->timeProcess) - fila_prioridades.front()->momentoVolta;
+                    fila_prioridades.push(p);
+                }
+
+                while (!fila_prioridades.empty())
+                {
+                    cout << "e----------------------------------------------------" << endl;
+                    cout << fila_prioridades.front()->nameProcess << endl;
+                    printCounter(fila_prioridades.front()->timeProcess);
+                    fila_prioridades.pop();
+                }
+            }
+            else
+            {
+                cout << "w----------------------------------------------------" << endl;
+                cout << p->nameProcess << endl;
+                printCounter(momentoInterrupcao);
+            }
+        }
+        else
+        {
+            // Exec tempo normal do processo
+            cout << "q----------------------------------------------------" << endl;
+            cout << p->nameProcess << endl;
+            printCounter(momentoInterrupcao);
+        }
     }
 }
+
 int main()
 {
     vector<Process *> processos;
@@ -147,14 +193,12 @@ int main()
             srand(time(NULL));
             duracao = rand() % 10;
         }
-
-        Process *p = new Process(tempo, interrupcao, duracao, "P" + to_string(i + 1));
-
-        processos.push_back(p);
+        Process *novoProcesso = new Process(tempo, interrupcao, duracao, "P" + to_string(i + 1), 0);
+        processos.push_back(novoProcesso);
     }
 
     //  FCFS(processos);
-    SJF(processos);
+    // SJF(processos);
     SRT(processos);
     return 0;
 }
