@@ -105,6 +105,9 @@ void SRT(vector<Process *> processos)
 {
     sort(tempos_Processos.begin(), tempos_Processos.end());
     processos = ordenaVetorMenorTempo(processos);
+
+    cout << "                         SRT" << endl;
+
     for (const auto &p : processos)
     {
         cout << "Durcao " << p->nameProcess << ": " << p->duration_interrupt << endl;
@@ -134,9 +137,9 @@ void SRT(vector<Process *> processos)
                 if (!(contTempo == fila_prioridades.front()->momentoVolta))
                 {
                     // Exec até o momento de volta do proximo processo
-                    cout << "r----------------------------------------------------" << endl;
+                    cout << "----------------------------------------------------" << endl;
                     cout << p->nameProcess << endl;
-                    printCounter(p->duration_interrupt);
+                    printCounter(fila_prioridades.front()->duration_interrupt);
                 }
 
                 if ((contTempo + p->timeProcess) - fila_prioridades.front()->momentoVolta > 0)
@@ -147,7 +150,7 @@ void SRT(vector<Process *> processos)
 
                 while (!fila_prioridades.empty())
                 {
-                    cout << "e----------------------------------------------------" << endl;
+                    cout << "----------------------------------------------------" << endl;
                     cout << fila_prioridades.front()->nameProcess << endl;
                     printCounter(fila_prioridades.front()->timeProcess);
                     fila_prioridades.pop();
@@ -155,7 +158,7 @@ void SRT(vector<Process *> processos)
             }
             else
             {
-                cout << "w----------------------------------------------------" << endl;
+                cout << "----------------------------------------------------" << endl;
                 cout << p->nameProcess << endl;
                 printCounter(momentoInterrupcao);
             }
@@ -163,7 +166,7 @@ void SRT(vector<Process *> processos)
         else
         {
             // Exec tempo normal do processo
-            cout << "q----------------------------------------------------" << endl;
+            cout << "----------------------------------------------------" << endl;
             cout << p->nameProcess << endl;
             printCounter(momentoInterrupcao);
         }
