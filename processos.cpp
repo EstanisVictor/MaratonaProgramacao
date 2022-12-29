@@ -179,6 +179,7 @@ void SRT(vector<Process *> processos)
             if (contTempo == p->momentoVolta)
             {
                 // salvar as informações do processo interrompido forçado
+                p->duration_interrupt = 0;
                 break;
             }
         }
