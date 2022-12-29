@@ -200,7 +200,7 @@ void SRT(vector<Process *> processos)
             {
                 // salvar as informações do processo interrompido forçado
                 processoAtual->momentoVolta = contTempo + (momentInterrupt - i + 1);
-                processoAtual->timeProcess = (momentInterrupt - i + 1);
+                processoAtual->timeProcess = (momentInterrupt - i - 1);
                 fila_prioridades.push_back(processoAtual);
                 // adicionando o processo de prioridade maior, para voltar a executar
                 processos.insert(processos.begin() + 1, fila_prioridades.front());
@@ -220,7 +220,7 @@ void SRT(vector<Process *> processos)
         const auto processoAtual = fila_prioridades.front();
         cout << "-----------------------------------------------------" << endl;
         cout << processoAtual->nameProcess << endl;
-        for (int i = 0; i < momentInterrupt; i++)
+        for (int i = 0; i < processoAtual->timeProcess; i++)
         {
             cout << "\r" << i + 1 << "s";
             contTempo++;
