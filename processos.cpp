@@ -2,8 +2,7 @@
 #include <unistd.h>
 using namespace std;
 
-vector<int> tempos_Processos;
-int contTempo = 0;
+int tempoAtual = 0;
 
 class Process
 {
@@ -13,21 +12,25 @@ public:
     bool interrupt;
     int duration_interrupt;
     int momentoVolta;
-    Process(int _time, bool _interrupt, int _duration, string _nameProcess)
+    bool status;
+
+    Process(int _time, bool _interrupt, int _duration, string _nameProcess, bool _status)
     {
         nameProcess = _nameProcess;
         timeProcess = _time;
         interrupt = _interrupt;
         duration_interrupt = _duration;
+        status = _status;
     }
     // Construtor para SRT
-    Process(int _time, bool _interrupt, int _duration, string _nameProcess, int _momentoVolta)
+    Process(int _time, bool _interrupt, int _duration, string _nameProcess, int _momentoVolta, bool _status)
     {
         nameProcess = _nameProcess;
         timeProcess = _time;
         interrupt = _interrupt;
         duration_interrupt = _duration;
         momentoVolta = _momentoVolta;
+        status = _status;
     }
 
     int getTime() const
@@ -51,20 +54,31 @@ bool ordenaMomentoVolta(Process *p1, Process *p2)
     return p1->getMomento() < p2->getMomento();
 }
 
+void printDuracaoInterrupcao(vector<Process *> processos)
+{
+    for (const auto &p : processos)
+    {
+        cout << "Durcao " << p->nameProcess << ": " << p->duration_interrupt << endl;
+    }
+}
+
 void printCounter(int counter)
 {
-    for (int i = 0; i < counter; i++)
+    for (int i = 1; i <= counter; i++)
     {
-        cout << "\r" << i + 1 << "s";
+        cout << "\r" << i << "s";
         sleep(1);
+        tempoAtual++;
     }
-    cout << endl;
+    cout << "\nTerminou em: "
+         << tempoAtual << endl;
 }
 // prmeiro entra, primeiro sai
 void FCFS(vector<Process *> processos)
 {
     int momentInterrupt = 0;
     cout << "                         FCFS" << endl;
+    printDuracaoInterrupcao(processos);
     for (size_t i = 0; i < processos.size(); i++)
     {
 
@@ -80,9 +94,11 @@ void FCFS(vector<Process *> processos)
                 momentInterrupt = 1;
             }
 
-            processos[i]->interrupt = false;
-            processos[i]->timeProcess = processos[i]->timeProcess - momentInterrupt;
-            processos.push_back(processos[i]);
+            Process *novoProcesso = new Process((processos[i]->timeProcess - momentInterrupt),
+                                                false, processos[i]->duration_interrupt, processos[i]->nameProcess,
+                                                (tempoAtual + processos[i]->duration_interrupt), true);
+
+            processos.push_back(novoProcesso);
         }
         else
         {
@@ -90,16 +106,31 @@ void FCFS(vector<Process *> processos)
             momentInterrupt = processos[i]->timeProcess;
         }
 
-        cout << "-----------------------------------------------------" << endl;
-        cout << processos[i]->nameProcess << endl;
-        printCounter(momentInterrupt);
+        if (tempoAtual < processos[i]->momentoVolta && processos[i]->status)
+        {
+            // pode estar ocioso
+            cout << "-----------------------------------------------------" << endl;
+            cout << "CPU em estado de ocioso..." << endl;
+
+            printCounter(processos[i]->momentoVolta - tempoAtual + 1);
+
+            cout << "-----------------------------------------------------" << endl;
+            cout << processos[i]->nameProcess << " comeca a executar no tempo: " << tempoAtual << endl;
+            printCounter(momentInterrupt);
+        }
+        else
+        {
+            cout << "-----------------------------------------------------" << endl;
+            cout << processos[i]->nameProcess << " comeca a executar no tempo: " << tempoAtual << endl;
+            printCounter(momentInterrupt);
+        }
     }
 }
 
 // menor tempo executa primeiro
 void SJF(vector<Process *> processos)
 {
-    contTempo = 0;
+    tempoAtual = 0;
     int momentInterrupt = 0;
     sort(processos.begin(), processos.end(), ordenaTempo);
     cout << "                         SJF" << endl;
@@ -140,7 +171,7 @@ Menor tempo entra, caso de interrupção, o grau de prioridade está atrelado ao
 */
 void SRT(vector<Process *> processos)
 {
-    contTempo = 0;
+    tempoAtual = 0;
     sort(processos.begin(), processos.end(), ordenaTempo);
     cout << "                         SRT" << endl;
     vector<Process *> fila_prioridades;
@@ -168,7 +199,7 @@ void SRT(vector<Process *> processos)
             }
 
             processoAtual->interrupt = false;
-            processoAtual->momentoVolta = contTempo + processoAtual->duration_interrupt + momentInterrupt;
+            processoAtual->momentoVolta = tempoAtual + processoAtual->duration_interrupt + momentInterrupt;
             processoAtual->timeProcess = processoAtual->timeProcess - momentInterrupt;
             fila_prioridades.push_back(processoAtual);
         }
@@ -183,23 +214,26 @@ void SRT(vector<Process *> processos)
         for (int i = 0; i < momentInterrupt; i++)
         {
             cout << "\r" << i + 1 << "s";
-            contTempo++;
+            tempoAtual++;
             sleep(1);
 
-            for (size_t j = 0; j < fila_prioridades.size(); j++)
+            if (!fila_prioridades.empty())
             {
-                if (fila_prioridades[j]->momentoVolta == contTempo)
+                for (size_t j = 0; j < fila_prioridades.size(); j++)
                 {
-                    processoInterrompido = true;
-                    sort(fila_prioridades.begin(), fila_prioridades.end(), ordenaMomentoVolta);
-                    break;
+                    if (fila_prioridades[j]->momentoVolta == tempoAtual)
+                    {
+                        processoInterrompido = true;
+                        sort(fila_prioridades.begin(), fila_prioridades.end(), ordenaMomentoVolta);
+                        break;
+                    }
                 }
             }
 
             if (processoInterrompido)
             {
                 // salvar as informações do processo interrompido forçado
-                processoAtual->momentoVolta = contTempo + (momentInterrupt - i + 1);
+                processoAtual->momentoVolta = tempoAtual + (momentInterrupt - i + 1);
                 processoAtual->timeProcess = (momentInterrupt - i - 1);
                 fila_prioridades.push_back(processoAtual);
                 // adicionando o processo de prioridade maior, para voltar a executar
@@ -209,7 +243,7 @@ void SRT(vector<Process *> processos)
                 break;
             }
         }
-        cout << "\nTempo Total: " << contTempo;
+        cout << "\nTempo Total: " << tempoAtual;
         cout << endl;
 
         processos.erase(processos.begin() + 0);
@@ -223,14 +257,15 @@ void SRT(vector<Process *> processos)
         for (int i = 0; i < processoAtual->timeProcess; i++)
         {
             cout << "\r" << i + 1 << "s";
-            contTempo++;
+            tempoAtual++;
             sleep(1);
         }
-        cout << "\nTempo Total: " << contTempo;
+        cout << "\nTempo Total: " << tempoAtual;
         cout << endl;
         processos.erase(processos.begin() + 0);
     }
 }
+
 int main()
 {
     vector<Process *> processos;
@@ -242,7 +277,6 @@ int main()
         cout << "Tempo do processo " << i + 1 << "?" << endl;
         int tempo;
         cin >> tempo;
-        tempos_Processos.push_back(tempo);
 
         cout << "P" << i + 1 << " tem interrupcao?" << endl;
         cout << "0 - NAO\n1 - SIM" << endl;
@@ -258,12 +292,12 @@ int main()
                 duracao = rand() % 10;
             }
         }
-        Process *novoProcesso = new Process(tempo, interrupcao, duracao, "P" + to_string(i + 1), 0);
+        Process *novoProcesso = new Process(tempo, interrupcao, duracao, "P" + to_string(i + 1), 0, false);
         processos.push_back(novoProcesso);
     }
 
-    // FCFS(processos);
+    FCFS(processos);
     // SJF(processos);
-    SRT(processos);
+    // SRT(processos);
     return 0;
 }
