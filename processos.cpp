@@ -14,6 +14,10 @@ public:
     int momentoVolta;
     bool status;
 
+    Process()
+    {
+    }
+
     Process(int _time, bool _interrupt, int _duration, string _nameProcess, bool _status)
     {
         nameProcess = _nameProcess;
@@ -70,8 +74,7 @@ void printCounter(int counter)
         sleep(1);
         tempoAtual++;
     }
-    cout << "\nTerminou em: "
-         << tempoAtual << endl;
+    cout << "\nTerminou em: " << tempoAtual << endl;
 }
 // prmeiro entra, primeiro sai
 void FCFS(vector<Process *> processos)
@@ -190,21 +193,68 @@ void SJF(vector<Process *> processos)
         processos.erase(processos.begin() + 0);
     }
 }
+
+void printCounterSRT(int counter, vector<Process *> &fila_prioridades, Process *processoAtual, vector<Process *> &processos)
+{
+    auto processoPrioridade = new Process();
+    int indiceProcessoPrioridade = 0;
+    bool processoInterrompido = false;
+
+    for (int i = 1; i <= counter; i++)
+    {
+        // verificação para ver se é o momento de interromper
+        if (!fila_prioridades.empty())
+        {
+            for (size_t j = 0; j < fila_prioridades.size(); j++)
+            {
+                if (fila_prioridades[j]->momentoVolta == tempoAtual)
+                {
+                    processoInterrompido = true;
+                    processoPrioridade = fila_prioridades[j];
+                    indiceProcessoPrioridade = j;
+                    break;
+                }
+            }
+        }
+
+        if (processoInterrompido)
+        {
+            // salvar as informações do processo interrompido forçado
+            processoAtual->timeProcess = processoAtual->timeProcess - i;
+            processoAtual->momentoVolta = tempoAtual + processoAtual->duration_interrupt + i;
+            fila_prioridades.push_back(processoAtual);
+            // adicionando o processo de prioridade maior, para voltar a executar
+            processos.insert(processos.begin() + 1, processoPrioridade);
+            // removendo o primeiro elemento da fila de prioridades
+            fila_prioridades.erase(fila_prioridades.begin() + indiceProcessoPrioridade);
+            break;
+        }
+
+        cout << "\rExecutando: " << i << "s";
+        sleep(1);
+        tempoAtual++;
+    }
+    cout << "\nTerminou em: " << tempoAtual << endl;
+}
+
 /*
 Menor tempo entra, caso de interrupção, o grau de prioridade está atrelado ao menor tempo
 */
 void SRT(vector<Process *> processos)
 {
     tempoAtual = 0;
+    int momentInterrupt = 0;
+    vector<Process *> fila_prioridades;
+    auto processoPrioridade = new Process();
+    int indiceProcessoPrioridade = 0;
+
     sort(processos.begin(), processos.end(), ordenaTempo);
     cout << "                         SRT" << endl;
-    vector<Process *> fila_prioridades;
+
     printDuracaoInterrupcao(processos);
-    int momentInterrupt = 0;
 
     while (!processos.empty())
     {
-        bool processoInterrompido = false;
         const auto processoAtual = processos.front();
 
         if (processoAtual->interrupt)
@@ -228,61 +278,47 @@ void SRT(vector<Process *> processos)
             // Não houve interrupção, vai executar o tempo total do processo
             momentInterrupt = processoAtual->timeProcess;
         }
-        cout << "-----------------------------------------------------" << endl;
-        cout << processoAtual->nameProcess << endl;
 
-        for (int i = 1; i <= momentInterrupt; i++)
+        if (tempoAtual < processoAtual->momentoVolta && processoAtual->status)
         {
+            // pode estar ocioso
+            cout << "o-----------------------------------------------------------------" << endl;
+            cout << "CPU em estado de ocioso..." << endl;
 
-            if (!fila_prioridades.empty())
-            {
-                for (size_t j = 0; j < fila_prioridades.size(); j++)
-                {
-                    if (fila_prioridades[j]->momentoVolta == tempoAtual)
-                    {
-                        processoInterrompido = true;
-                        swap(fila_prioridades.front(), fila_prioridades[j]);
-                        break;
-                    }
-                }
-            }
+            printCounter(processoAtual->momentoVolta - tempoAtual);
 
-            cout << "\r" << i << "s";
-            tempoAtual++;
-            sleep(1);
-
-            if (processoInterrompido)
-            {
-                // salvar as informações do processo interrompido forçado
-                processoAtual->timeProcess = processoAtual->timeProcess - i;
-                processoAtual->momentoVolta = tempoAtual + processoAtual->duration_interrupt + i;
-                fila_prioridades.push_back(processoAtual);
-                // adicionando o processo de prioridade maior, para voltar a executar
-                processos.insert(processos.begin() + 1, fila_prioridades.front());
-                // removendo o primeiro elemento da fila de prioridades
-                fila_prioridades.erase(fila_prioridades.begin() + 0);
-                break;
-            }
+            processos.insert(processos.begin() + 1, processoAtual);
         }
-        cout << "\nTempo Total: " << tempoAtual;
-        cout << endl;
-
+        else
+        {
+            cout << "p-----------------------------------------------------------------" << endl;
+            cout << processoAtual->nameProcess << " comeca a executar no tempo: " << tempoAtual << endl;
+            printCounterSRT(momentInterrupt, fila_prioridades, processoAtual, processos);
+        }
         processos.erase(processos.begin() + 0);
     }
 
     while (!fila_prioridades.empty())
     {
         const auto processoAtual = fila_prioridades.front();
-        cout << "-----------------------------------------------------" << endl;
-        cout << processoAtual->nameProcess << endl;
-        for (int i = 0; i < processoAtual->timeProcess; i++)
+
+        if (tempoAtual < processoAtual->momentoVolta && processoAtual->status)
         {
-            cout << "\r" << i + 1 << "s";
-            tempoAtual++;
-            sleep(1);
+            // pode estar ocioso
+            cout << "q-----------------------------------------------------------------" << endl;
+            cout << "CPU em estado de ocioso..." << endl;
+
+            printCounter(processoAtual->momentoVolta - tempoAtual);
+
+            fila_prioridades.insert(fila_prioridades.begin() + 1, processoAtual);
         }
-        cout << "\nTempo Total: " << tempoAtual;
-        cout << endl;
+        else
+        {
+            cout << "r-----------------------------------------------------------------" << endl;
+            cout << processoAtual->nameProcess << " comeca a executar no tempo: " << tempoAtual << endl;
+            printCounter(momentInterrupt);
+        }
+
         fila_prioridades.erase(fila_prioridades.begin() + 0);
     }
 }
@@ -320,5 +356,6 @@ int main()
     // FCFS(processos);
     // SJF(processos);
     SRT(processos);
+    system("pause");
     return 0;
 }
