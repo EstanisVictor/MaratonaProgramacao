@@ -8,8 +8,8 @@
       "args": [],
       "stopAtEntry": false,
       "externalConsole": true,
-      "cwd": "c:/Users/victo/Documents/RepositorioGit/MaratonaProgramacao",
-      "program": "c:/Users/victo/Documents/RepositorioGit/MaratonaProgramacao/build/Debug/outDebug",
+      "cwd": "c:/Users/victo/GitHub/MaratonaProgramacao",
+      "program": "c:/Users/victo/GitHub/MaratonaProgramacao/build/Debug/outDebug",
       "MIMode": "gdb",
       "miDebuggerPath": "gdb",
       "setupCommands": [
