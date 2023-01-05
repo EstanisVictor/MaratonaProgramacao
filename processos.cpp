@@ -2,8 +2,6 @@
 #include <unistd.h>
 using namespace std;
 
-queue<string> queue_process;
-
 class Process
 {
 public:
@@ -57,18 +55,45 @@ void FCFS(vector<Process *> processes)
     }
 }
 
+void SJF(vector<Process *> processes, vector<int> times)
+{
+    sort(times.begin(), times.end());
+
+    queue<Process *> fila;
+    //ordenando o vetor de processos pelo menor tempo do processo
+    for (size_t i = 0; i < processes.size(); i++)
+    {
+        for (size_t j = 0; j < processes.size(); j++)
+        {
+            if (processes[j]->timeProcess == times[i])
+            {
+                fila.push(processes[j]);
+            }
+        }
+    }
+
+    while (!fila.empty())
+    {
+        cout << fila.front()->timeProcess << endl;
+        fila.pop();
+    }
+    
+
+}
+
 int main()
 {
     vector<Process *> processes;
+    vector<int> times;
 
     for (size_t i = 0; i < 3; i++)
     {
         int duration = 0;
 
         cout << "Tempo do processo " << i + 1 << "?" << endl;
-        int addTime;
-        cin >> addTime;
-
+        int newTime;
+        cin >> newTime;
+        times.push_back(newTime);
         cout << "P" << i + 1 << " tem interrupcao?" << endl;
         cout << "0 - NAO\n1 - SIM" << endl;
         bool interuptQuestion;
@@ -80,12 +105,14 @@ int main()
             duration = rand() % 10;
         }
 
-        Process *p = new Process(addTime, interuptQuestion, duration, "P" + to_string(i + 1));
+        Process *p = new Process(newTime, interuptQuestion, duration, "P" + to_string(i + 1));
 
         processes.push_back(p);
     }
 
-    FCFS(processes);
+    // FCFS(processes);
+
+    SJF(processes, times);
 
     return 0;
 }
