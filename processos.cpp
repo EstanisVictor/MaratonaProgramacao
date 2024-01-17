@@ -129,7 +129,6 @@ void FCFS(vector<Process *> processos)
         }
     }
 }
-
 // menor tempo executa primeiro
 void SJF(vector<Process *> processos)
 {
@@ -194,46 +193,6 @@ void SJF(vector<Process *> processos)
     }
 }
 
-void separaProcessos(vector<Process *> processos, vector<Process *> &fila_restantes)
-{
-    int momentInterrupt = 0;
-    while (!processos.empty())
-    {
-        const auto processoAtual = processos.front();
-
-        if (processoAtual->is_interrupted)
-        {
-            // Houve a interrupção
-            if ((processoAtual->time) % 2 == 0)
-            {
-                momentInterrupt = (processoAtual->time) / 2;
-            }
-            else
-            {
-                momentInterrupt = 1;
-            }
-            Process *novoProcesso = new Process((processoAtual->time - momentInterrupt),
-                                                false, processoAtual->interruption_time, processoAtual->name,
-                                                (tempoAtual + processoAtual->interruption_time + momentInterrupt), true);
-            processoAtual->time = momentInterrupt;
-            fila_restantes.push_back(processoAtual);
-            fila_restantes.push_back(novoProcesso);
-        }
-        else
-        {
-            // Não houve interrupção, vai executar o tempo total do processo
-            fila_restantes.push_back(processoAtual);
-        }
-
-        for (size_t i = 0; i < momentInterrupt; i++)
-        {
-            tempoAtual++;
-        }
-
-        processos.erase(processos.begin() + 0);
-    }
-}
-
 /*
 Menor tempo entra, caso de interrupção, o grau de prioridade está atrelado ao menor tempo
 */
@@ -241,13 +200,7 @@ void SRT(vector<Process *> processos)
 {
     sort(processos.begin(), processos.end(), timeOrder);
 
-    while (!processos.empty())
-    {
-        Process *processoAtual = processos.front();
-        processos.erase(processos.begin());
-
-        cout << processoAtual->name << endl;
-    }
+    
 }
 
 int main()

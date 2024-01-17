@@ -103,5 +103,18 @@
     "**/.*/**",
     "**/.vscode",
     "**/.vscode/**"
+  ],
+  "cSpell.words": [
+    "comeca",
+    "depois",
+    "esta",
+    "Estado",
+    "Executando",
+    "executar",
+    "mudar",
+    "Ocioso",
+    "restante",
+    "retornar",
+    "terminou"
   ]
 }

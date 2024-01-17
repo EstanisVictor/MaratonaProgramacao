@@ -10,17 +10,17 @@ public:
     int burst_time;
     int arrival_time;
     int time_spent;
-    bool has_insrruption;
+    bool has_interruption;
     bool is_interrupted;
     int return_time;
 
-    Process(string _name, int _arrivalTime, int _time, int _timeSpent, bool _hasInsruption, bool _isInterrupted, int _returnTime)
+    Process(string _name, int _arrivalTime, int _time, int _timeSpent, bool _hasInterruption, bool _isInterrupted, int _returnTime)
     {
         name = _name;
         burst_time = _time;
         arrival_time = _arrivalTime;
         time_spent = _timeSpent;
-        has_insrruption = _hasInsruption;
+        has_interruption = _hasInterruption;
         is_interrupted = _isInterrupted;
         return_time = _returnTime;
     }
@@ -36,11 +36,11 @@ bool timeOrder(Process *p1, Process *p2)
     return p1->getTime() < p2->getTime();
 }
 
-int find_process(vector<Process *> processes, int *currient_time)
+int find_process(vector<Process *> processes, int *current_time)
 {
     for (int i = 0; i < processes.size(); i++)
     {
-        if (processes[i]->arrival_time <= *currient_time)
+        if (processes[i]->arrival_time <= *current_time && processes[i]->return_time <= *current_time)
         {
             return i;
         }
@@ -53,7 +53,7 @@ int find_fast_process(vector<Process *> processes, int *current_time, Process *c
 {
     for (size_t i = 0; i < processes.size(); i++)
     {
-        if (processes[i]->arrival_time < *current_time && processes[i]->burst_time - processes[i]->time_spent < current_process->burst_time - time)
+        if (processes[i]->arrival_time < *current_time && processes[i]->burst_time - processes[i]->time_spent < current_process->burst_time - time && processes[i]->return_time <= *current_time)
         {
             return i;
         }
@@ -66,8 +66,9 @@ int main()
 {
     vector<Process *> processes;
 
-    processes.push_back(new Process("P1", 0, 7, 0, true, false, 0));
-    // processes.push_back(new Process("P2", 0, 5, 0, false, false, 0));
+    processes.push_back(new Process("P1", 0, 6, 0, false, false, 0));
+    processes.push_back(new Process("P2", 0, 5, 0, true, false, 0));
+    processes.push_back(new Process("P3", 0, 7, 0, false, false, 0));
 
     // processes.push_back(new Process("P1", 0, 1, 0));
     // processes.push_back(new Process("P2", 0, 2, 0));
@@ -86,6 +87,7 @@ int main()
     sort(processes.begin(), processes.end(), timeOrder);
 
     int current_time = 0;
+    int countEstadoOcioso = 1;
 
     while (!processes.empty())
     {
@@ -96,11 +98,17 @@ int main()
 
         if (p->is_interrupted && p->return_time > current_time)
         {
-            cout << "\ncpu em estado de ocioso..." << endl;
+            cout << "\rOcioso: " << current_time << "s";
 
             sleep(1);
             current_time++;
             processes.push_back(p);
+            countEstadoOcioso++;
+
+            if (current_time == p->return_time)
+            {
+                cout << endl;
+            }
 
             continue;
         }
@@ -133,7 +141,7 @@ int main()
             }
             else
             {
-                processes.push_back(new Process(p->name, p->arrival_time, p->burst_time, tempo, p->has_insrruption, p->is_interrupted, p->return_time));
+                processes.push_back(new Process(p->name, p->arrival_time, p->burst_time, tempo, p->has_interruption, p->is_interrupted, p->return_time));
 
                 cout << "\n"
                      << p->name << " interrompido!!" << endl;
@@ -153,26 +161,41 @@ int main()
 
             if (tempo == p->burst_time)
             {
-                current_time++;
-                cout << p->name << " terminou em: " << current_time << endl;
+                cout << "\rExecutando: " << tempo << "s" << endl;
+                sleep(1);
+                cout << "Processo: " << p->name << " terminou em " << current_time << endl;
                 continue;
             }
 
             // mudar o tempo depois
-            if (p->has_insrruption && tempo == 2)
-            {
-                int duration = 2;
-                cout << "Porcesso vai demorar: " << tempo << "s" << endl;
-                cout << "Processo pode retornar: " << current_time + duration << "s" << endl;
 
-                Process *processoSalvo = new Process(p->name, p->arrival_time, p->burst_time, tempo + 1 , false, true, current_time + duration);
+            if (p->burst_time % 2 == 0)
+            {
+            }
+            else
+            {
+            }
+
+            if (p->has_interruption && tempo == 2)
+            {
+
+                cout << "\rExecutando: " << tempo << "s" << endl;
+                sleep(1);
+
+                int duration = 4;
+                cout << "*****************************************************************" << endl;
+                cout << "Processo esta interrompido por " << tempo << "s" << endl;
+                cout << "Processo vai retornar aos " << current_time + duration << "s" << endl;
+                cout << "*****************************************************************" << endl;
+
+                Process *processoSalvo = new Process(p->name, p->arrival_time, p->burst_time, tempo, false, true, current_time + duration);
 
                 processes.push_back(processoSalvo);
 
                 break;
             }
 
-            cout << "Executando: " << tempo << "s" << endl;
+            cout << "\rExecutando: " << tempo << "s";
             sleep(1);
             current_time++;
         }
